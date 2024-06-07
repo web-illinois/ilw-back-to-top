@@ -1,0 +1,6 @@
+:root {
+    --ilw-back-to-top-position-x: 40px;
+    --ilw-back-to-top-position-y: 40px;
+    --ilw-back-to-top-foreground-color: white;
+    --ilw-back-to-top-background-color: var(--il-blue);
+}
