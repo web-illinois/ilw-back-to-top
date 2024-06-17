@@ -30,12 +30,12 @@ To change the location of the top of the page, use the `target` attribute:
 <ilw-back-to-top target="my-top-of-page"></ilw-back-to-top>
 ```
 
-To change the position of the button, modify the `ilw-back-to-top-right` and `ilw-back-to-top-bottom` CSS variables. These control the distance from the button to the right and bottom edges of the screen, respectively.
+To change the position of the button, modify the `ilw-back-to-top--right` and `ilw-back-to-top--bottom` CSS variables. These control the distance from the button to the right and bottom edges of the screen, respectively.
 
 ```css
 ilw-back-to-top {
-  --ilw-back-to-top-right: 48px;
-  --ilw-back-to-top-bottom: 48px;
+  --ilw-back-to-top--right: 48px;
+  --ilw-back-to-top--bottom: 48px;
 }
 ```
 ## External References
