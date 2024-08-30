@@ -38,5 +38,7 @@ ilw-back-to-top {
   --ilw-back-to-top--bottom: 48px;
 }
 ```
+## Upgrade Process
+Rename il-back-to-top to ilw-back-to-top.
 ## External References
 https://www.nngroup.com/articles/back-to-top/
