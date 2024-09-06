@@ -20,10 +20,15 @@ button {
   transition: transform .4s;
   cursor: pointer;
 }
-button:hover, button:focus {
+button:hover {
   background-color: var(--ilw-back-to-top--color);
   border-color: var(--ilw-back-to-top--background);
 }
+button:focus {
+  background-color: var(--ilw-link--focus-background-color);
+  border-color: var(--ilw-back-to-top--background);
+  outline: var(--ilw-link--focus-outline);
+}  
 button.top-of-page {
   transform: translateY(88px);
 }

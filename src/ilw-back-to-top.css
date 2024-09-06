@@ -3,4 +3,7 @@
     --ilw-back-to-top--right: 40px;
     --ilw-back-to-top--color: white;
     --ilw-back-to-top--background: var(--il-blue);
+    --ilw-back-to-top--focus-background-color: var(--ilw-link--focus-background-color);
+    --ilw-back-to-top--focus-color: var(--ilw-link--focus-color);
+    --ilw-back-to-top--focus-outline: solid var(--il-blue) 1px;
 }
