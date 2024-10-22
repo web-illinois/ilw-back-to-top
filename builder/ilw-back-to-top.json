@@ -6,7 +6,7 @@
     "element-name": "ilw-back-to-top",
 	"description": "The Illinois component back-to-top allows you to provide a simple way to skip either to the top of a page or to a designated point in the page (such as the page content area). You can choose alternate Illinois brand colors and adjust the position of the arrow.",
     "purpose": "Provide a way to scroll back to the top of the page.",
-    "toolkit-version": "",
-    "production-version": "",
+    "toolkit-version": "1.0",
+    "production-version": "1.0",
     "development-version": "1.0-beta"
 }
