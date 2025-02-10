@@ -7,7 +7,8 @@ class BackToTop extends LitElement {
   static get properties() {
     return {
       alt: { type: String, attribute: true },
-      target: { type: String, attribute: true }
+      target: { type: String, attribute: true },
+      isTopOfPage: {type: Boolean, state: true}
     };
   }
 
@@ -20,17 +21,58 @@ class BackToTop extends LitElement {
     this.alt = 'Back to top';
     this.target = null;
     this.expectedPositionAfterScroll = null;
+    this.topOfPage = 0;
+    this.isTopOfPage = true;
     this.continueScroll = this.continueScroll.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
   }
 
   connectedCallback() {
     super.connectedCallback();
-    window.addEventListener('scroll', this.handleScroll);
+
+    // This prevents the briefly appearing back-to-top element when
+    // using a target, since it lets the page render fully before calculating. There's
+    // also a large number of redundant scroll events that happens right away, hence the 10ms wait.
+    setTimeout(() => {
+      window.addEventListener('scroll', this.handleScroll);
+      this.setResizeObserver();
+      // We need to call this here as well, since the resize observer isn't guaranteed to be set
+      this.handleScroll();
+    }, 10);
+  }
+
+  setResizeObserver() {
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+    if (this.target) {
+      const targetElement = document.getElementById(this.target);
+      if (targetElement) {
+        this.topOfPage = targetElement.getBoundingClientRect().top + document.documentElement.scrollTop;
+        this.observer = new ResizeObserver((entries) => {
+          if (entries.length > 0 && targetElement) {
+            this.topOfPage = targetElement.getBoundingClientRect().top + document.documentElement.scrollTop;
+          } else {
+            this.topOfPage = 0;
+          }
+          this.handleScroll();
+        })
+
+        this.observer.observe(window.document.documentElement);
+      }
+    }
+  }
+
+  update(changedProperties) {
+    if (changedProperties.get('target')) {
+      this.setResizeObserver();
+    }
+    super.update(changedProperties);
   }
 
   continueScroll() {
-    if (!this.isTopOfPage() && this.isInExpectedPosition()) {
+    if (!this.isTopOfPage && this.isInExpectedPosition()) {
       this.scrollToTop();
     }
   }
@@ -38,6 +80,9 @@ class BackToTop extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('scroll', this.handleScroll);
+    if (this.observer) {
+      this.observer.disconnect();
+    }
   }
 
   getButton() {
@@ -49,18 +94,11 @@ class BackToTop extends LitElement {
   }
 
   getNextScrollPosition() {
-    return Math.max(this.getTopOfPage(), this.getScrollPosition() - 50);
+    return Math.max(this.topOfPage, this.getScrollPosition() - 50);
   }
 
   getScrollPosition() {
-    return window.pageYOffset || document.documentElement.scrollTop;
-  }
-
-  getTopOfPage() {
-    if (this.target && document.getElementById(this.target)) {
-      return document.getElementById(this.target).getBoundingClientRect().top + document.documentElement.scrollTop
-    }
-    return 0;
+    return window.scrollY || document.documentElement.scrollTop;
   }
 
   handleClick(evt) {
@@ -70,8 +108,9 @@ class BackToTop extends LitElement {
     this.startScrollToTop();
   }
 
-  handleScroll(evt) {
-    this.updateButton();
+  handleScroll() {
+    // Render is only called if the boolean actually changes
+    this.isTopOfPage = this.getScrollPosition() <= this.topOfPage;
   }
 
   isBelowFold() {
@@ -80,14 +119,6 @@ class BackToTop extends LitElement {
 
   isInExpectedPosition() {
     return this.getScrollPosition() === this.expectedPositionAfterScroll;
-  }
-
-  isNearTopOfPage() {
-    return this.getScrollPosition() < (this.getTopOfPage() + 100);
-  }
-
-  isTopOfPage() {
-    return this.getScrollPosition() <= this.getTopOfPage();
   }
 
   jumpToFold() {
@@ -104,10 +135,6 @@ class BackToTop extends LitElement {
     this.scrollToTop();
   }
 
-  updateButton() {
-    this.getButton().classList[this.isNearTopOfPage() ? 'add' : 'remove']('top-of-page');
-  }
-
   renderIcon() {
     return html`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="presentation">
       <path d="M8 24l2.83 2.83L22 15.66V40h4V15.66l11.17 11.17L40 24 24 8 8 24z"/>
@@ -115,7 +142,7 @@ class BackToTop extends LitElement {
   }
 
   render() {
-    return html`<button @click="${this.handleClick}" class="${this.isTopOfPage() ? 'top-of-page' : ''}"
+    return html`<button @click="${this.handleClick}" class="${this.isTopOfPage ? 'top-of-page' : ''}"
     aria-label=${this.alt}>${this.renderIcon()}</button>`;
   }
 }
