@@ -29,15 +29,16 @@ class BackToTop extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    window.addEventListener('scroll', this.handleScroll);
 
     // This prevents the briefly appearing back-to-top element when
-    // using a target, since it lets the page render fully before calculating
+    // using a target, since it lets the page render fully before calculating. There's
+    // also a large number of redundant scroll events that happens right away, hence the 10ms wait.
     setTimeout(() => {
+      window.addEventListener('scroll', this.handleScroll);
       this.setResizeObserver();
       // We need to call this here as well, since the resize observer isn't guaranteed to be set
       this.handleScroll();
-    }, 0)
+    }, 10);
   }
 
   setResizeObserver() {
