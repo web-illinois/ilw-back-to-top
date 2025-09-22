@@ -23,6 +23,7 @@ class BackToTop extends LitElement {
     this.expectedPositionAfterScroll = null;
     this.topOfPage = 0;
     this.isTopOfPage = true;
+    this.wasKeyboardActivated = false;
     this.continueScroll = this.continueScroll.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
   }
@@ -74,6 +75,13 @@ class BackToTop extends LitElement {
   continueScroll() {
     if (!this.isTopOfPage && this.isInExpectedPosition()) {
       this.scrollToTop();
+    } else if (this.isTopOfPage) {
+      // Only focus the first element if this was a keyboard interaction
+      if (this.wasKeyboardActivated) {
+        this.focusFirstElement();
+      }
+      // Reset the flag
+      this.wasKeyboardActivated = false;
     }
   }
 
@@ -101,8 +109,53 @@ class BackToTop extends LitElement {
     return window.scrollY || document.documentElement.scrollTop;
   }
 
+  // Helper method to find the first focusable element on the page
+  getFirstFocusableElement() {
+    const focusableSelectors = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+      'audio[controls]',
+      'video[controls]',
+      '[contenteditable]:not([contenteditable="false"])',
+      'details > summary'
+    ];
+
+    const focusableElements = document.querySelectorAll(focusableSelectors.join(','));
+
+    // Filter out elements that are not visible or have negative tabindex
+    for (let element of focusableElements) {
+      const style = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+
+      if (style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        element.tabIndex !== -1 &&
+        (rect.width > 0 || rect.height > 0)) {
+        return element;
+      }
+    }
+
+    return null;
+  }
+
+  // Method to focus the first focusable element
+  focusFirstElement() {
+    const firstFocusable = this.getFirstFocusableElement();
+    if (firstFocusable) {
+      firstFocusable.focus();
+    }
+  }
+
   handleClick(evt) {
     evt.preventDefault();
+
+    // Store whether this was a keyboard interaction
+    this.wasKeyboardActivated = evt.detail === 0; // detail is 0 for keyboard events
+
     this.getButton().blur();
     if (this.isBelowFold()) this.jumpToFold();
     this.startScrollToTop();
