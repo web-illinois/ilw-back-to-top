@@ -1,34 +1,34 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, PropertyValues, TemplateResult } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import styles from './ilw-back-to-top.styles.js';
 import './ilw-back-to-top.css';
+import './ilw-colors.css';
 
-class BackToTop extends LitElement {
+@customElement('ilw-back-to-top')
+export default class BackToTop extends LitElement {
+  static styles = styles;
 
-  static get properties() {
-    return {
-      alt: { type: String, attribute: true },
-      target: { type: String, attribute: true },
-      isTopOfPage: {type: Boolean, state: true}
-    };
-  }
+  @property({ type: String, attribute: true })
+  alt: string = 'Back to top';
 
-  static get styles() {
-    return styles;
-  }
+  @property({ type: String, attribute: true })
+  target: string | null = null;
+
+  @state()
+  isTopOfPage: boolean = true;
+
+  private expectedPositionAfterScroll: number | null = null;
+  private topOfPage: number = 0;
+  private wasKeyboardActivated: boolean = false;
+  private observer: ResizeObserver | null = null;
 
   constructor() {
     super();
-    this.alt = 'Back to top';
-    this.target = null;
-    this.expectedPositionAfterScroll = null;
-    this.topOfPage = 0;
-    this.isTopOfPage = true;
-    this.wasKeyboardActivated = false;
     this.continueScroll = this.continueScroll.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     super.connectedCallback();
 
     // This prevents the briefly appearing back-to-top element when
@@ -42,7 +42,7 @@ class BackToTop extends LitElement {
     }, 10);
   }
 
-  setResizeObserver() {
+  private setResizeObserver(): void {
     if (this.observer) {
       this.observer.disconnect();
       this.observer = null;
@@ -51,28 +51,27 @@ class BackToTop extends LitElement {
       const targetElement = document.getElementById(this.target);
       if (targetElement) {
         this.topOfPage = targetElement.getBoundingClientRect().top + document.documentElement.scrollTop;
-        this.observer = new ResizeObserver((entries) => {
+        this.observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
           if (entries.length > 0 && targetElement) {
             this.topOfPage = targetElement.getBoundingClientRect().top + document.documentElement.scrollTop;
           } else {
             this.topOfPage = 0;
           }
           this.handleScroll();
-        })
+        });
 
         this.observer.observe(window.document.documentElement);
       }
     }
   }
 
-  update(changedProperties) {
-    if (changedProperties.get('target')) {
+  updated(changedProperties: PropertyValues): void {
+    if (changedProperties.has('target')) {
       this.setResizeObserver();
     }
-    super.update(changedProperties);
   }
 
-  continueScroll() {
+  private continueScroll(): void {
     if (!this.isTopOfPage && this.isInExpectedPosition()) {
       this.scrollToTop();
     } else if (this.isTopOfPage) {
@@ -85,7 +84,7 @@ class BackToTop extends LitElement {
     }
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     super.disconnectedCallback();
     window.removeEventListener('scroll', this.handleScroll);
     if (this.observer) {
@@ -93,24 +92,24 @@ class BackToTop extends LitElement {
     }
   }
 
-  getButton() {
-    return this.shadowRoot.querySelector('button');
+  private getButton(): HTMLButtonElement | null {
+    return this.shadowRoot?.querySelector('button') || null;
   }
 
-  getFoldPosition() {
-    return window.innerHeight * .8;
+  private getFoldPosition(): number {
+    return window.innerHeight * 0.8;
   }
 
-  getNextScrollPosition() {
+  private getNextScrollPosition(): number {
     return Math.max(this.topOfPage, this.getScrollPosition() - 50);
   }
 
-  getScrollPosition() {
+  private getScrollPosition(): number {
     return window.scrollY || document.documentElement.scrollTop;
   }
 
   // Helper method to find the first focusable element on the page
-  getFirstFocusableElement() {
+  private getFirstFocusableElement(): Element | null {
     const focusableSelectors = [
       'a[href]',
       'button:not([disabled])',
@@ -132,9 +131,9 @@ class BackToTop extends LitElement {
       const rect = element.getBoundingClientRect();
 
       if (style.display !== 'none' &&
-        style.visibility !== 'hidden' &&
-        element.tabIndex !== -1 &&
-        (rect.width > 0 || rect.height > 0)) {
+          style.visibility !== 'hidden' &&
+          (element as HTMLElement).tabIndex !== -1 &&
+          (rect.width > 0 || rect.height > 0)) {
         return element;
       }
     }
@@ -143,61 +142,69 @@ class BackToTop extends LitElement {
   }
 
   // Method to focus the first focusable element
-  focusFirstElement() {
-    const firstFocusable = this.getFirstFocusableElement();
+  private focusFirstElement(): void {
+    const firstFocusable = this.getFirstFocusableElement() as HTMLElement | null;
     if (firstFocusable) {
       firstFocusable.focus();
     }
   }
 
-  handleClick(evt) {
+  private handleClick(evt: Event): void {
     evt.preventDefault();
 
     // Store whether this was a keyboard interaction
-    this.wasKeyboardActivated = evt.detail === 0; // detail is 0 for keyboard events
+    this.wasKeyboardActivated = (evt as PointerEvent).detail === 0; // detail is 0 for keyboard events
 
-    this.getButton().blur();
+    const button = this.getButton();
+    if (button) {
+      button.blur();
+    }
     if (this.isBelowFold()) this.jumpToFold();
     this.startScrollToTop();
   }
 
-  handleScroll() {
+  private handleScroll(): void {
     // Render is only called if the boolean actually changes
     this.isTopOfPage = this.getScrollPosition() <= this.topOfPage;
   }
 
-  isBelowFold() {
+  private isBelowFold(): boolean {
     return this.getScrollPosition() > this.getFoldPosition();
   }
 
-  isInExpectedPosition() {
-    return this.getScrollPosition() === this.expectedPositionAfterScroll;
+  private isInExpectedPosition(): boolean {
+    return this.expectedPositionAfterScroll !== null &&
+        this.getScrollPosition() === this.expectedPositionAfterScroll;
   }
 
-  jumpToFold() {
+  private jumpToFold(): void {
     window.scrollTo(0, this.getFoldPosition());
   }
 
-  scrollToTop() {
+  private scrollToTop(): void {
     this.expectedPositionAfterScroll = this.getNextScrollPosition();
     window.scrollTo(0, this.expectedPositionAfterScroll);
     setTimeout(this.continueScroll, 10);
   }
 
-  startScrollToTop() {
+  private startScrollToTop(): void {
     this.scrollToTop();
   }
 
-  renderIcon() {
+  private renderIcon(): TemplateResult {
     return html`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="presentation">
       <path d="M8 24l2.83 2.83L22 15.66V40h4V15.66l11.17 11.17L40 24 24 8 8 24z"/>
     </svg>`;
   }
 
-  render() {
+  render(): TemplateResult {
     return html`<button @click="${this.handleClick}" class="${this.isTopOfPage ? 'top-of-page' : ''}"
-    aria-label=${this.alt}>${this.renderIcon()}</button>`;
+                        aria-label=${this.alt}>${this.renderIcon()}</button>`;
   }
 }
 
-customElements.define('ilw-back-to-top', BackToTop);
+declare global {
+  interface HTMLElementTagNameMap {
+    'ilw-back-to-top': BackToTop;
+  }
+}
