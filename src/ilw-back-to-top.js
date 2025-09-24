@@ -74,6 +74,9 @@ class BackToTop extends LitElement {
   continueScroll() {
     if (!this.isTopOfPage && this.isInExpectedPosition()) {
       this.scrollToTop();
+    } else if (this.isTopOfPage) {
+      // Focus the first focusable element when we reach the top
+      this.focusFirstElement();
     }
   }
 
@@ -99,6 +102,47 @@ class BackToTop extends LitElement {
 
   getScrollPosition() {
     return window.scrollY || document.documentElement.scrollTop;
+  }
+
+  // Helper method to find the first focusable element on the page
+  getFirstFocusableElement() {
+    const focusableSelectors = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+      'audio[controls]',
+      'video[controls]',
+      '[contenteditable]:not([contenteditable="false"])',
+      'details > summary'
+    ];
+
+    const focusableElements = document.querySelectorAll(focusableSelectors.join(','));
+
+    // Filter out elements that are not visible or have negative tabindex
+    for (let element of focusableElements) {
+      const style = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+
+      if (style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        element.tabIndex !== -1 &&
+        (rect.width > 0 || rect.height > 0)) {
+        return element;
+      }
+    }
+
+    return null;
+  }
+
+  // Method to focus the first focusable element
+  focusFirstElement() {
+    const firstFocusable = this.getFirstFocusableElement();
+    if (firstFocusable) {
+      firstFocusable.focus();
+    }
   }
 
   handleClick(evt) {
