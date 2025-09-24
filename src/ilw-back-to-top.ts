@@ -19,7 +19,6 @@ export default class BackToTop extends LitElement {
 
   private expectedPositionAfterScroll: number | null = null;
   private topOfPage: number = 0;
-  private wasKeyboardActivated: boolean = false;
   private observer: ResizeObserver | null = null;
 
   constructor() {
@@ -75,12 +74,7 @@ export default class BackToTop extends LitElement {
     if (!this.isTopOfPage && this.isInExpectedPosition()) {
       this.scrollToTop();
     } else if (this.isTopOfPage) {
-      // Only focus the first element if this was a keyboard interaction
-      if (this.wasKeyboardActivated) {
-        this.focusFirstElement();
-      }
-      // Reset the flag
-      this.wasKeyboardActivated = false;
+      this.focusFirstElement();
     }
   }
 
@@ -151,9 +145,6 @@ export default class BackToTop extends LitElement {
 
   private handleClick(evt: Event): void {
     evt.preventDefault();
-
-    // Store whether this was a keyboard interaction
-    this.wasKeyboardActivated = (evt as PointerEvent).detail === 0; // detail is 0 for keyboard events
 
     const button = this.getButton();
     if (button) {
