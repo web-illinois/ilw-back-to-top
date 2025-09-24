@@ -23,7 +23,6 @@ class BackToTop extends LitElement {
     this.expectedPositionAfterScroll = null;
     this.topOfPage = 0;
     this.isTopOfPage = true;
-    this.wasKeyboardActivated = false;
     this.continueScroll = this.continueScroll.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
   }
@@ -76,12 +75,8 @@ class BackToTop extends LitElement {
     if (!this.isTopOfPage && this.isInExpectedPosition()) {
       this.scrollToTop();
     } else if (this.isTopOfPage) {
-      // Only focus the first element if this was a keyboard interaction
-      if (this.wasKeyboardActivated) {
-        this.focusFirstElement();
-      }
-      // Reset the flag
-      this.wasKeyboardActivated = false;
+      // Focus the first focusable element when we reach the top
+      this.focusFirstElement();
     }
   }
 
@@ -152,10 +147,6 @@ class BackToTop extends LitElement {
 
   handleClick(evt) {
     evt.preventDefault();
-
-    // Store whether this was a keyboard interaction
-    this.wasKeyboardActivated = evt.detail === 0; // detail is 0 for keyboard events
-
     this.getButton().blur();
     if (this.isBelowFold()) this.jumpToFold();
     this.startScrollToTop();
