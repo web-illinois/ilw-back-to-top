@@ -2,7 +2,6 @@ import { LitElement, html, PropertyValues, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import styles from './ilw-back-to-top.styles.js';
 import './ilw-back-to-top.css';
-import './ilw-colors.css';
 
 @customElement('ilw-back-to-top')
 export default class BackToTop extends LitElement {
