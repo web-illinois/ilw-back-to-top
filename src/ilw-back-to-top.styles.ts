@@ -25,9 +25,9 @@ button:hover {
   border-color: var(--ilw-back-to-top--background);
 }
 button:focus {
-  background-color: var(--ilw-link--focus-background-color);
-  border-color: var(--ilw-back-to-top--background);
-  outline: var(--ilw-link--focus-outline);
+  background-color: var(--ilw-back-to-top--focus-background-color);
+  border-color: var(--ilw-back-to-top--focus-color);
+  outline: var(--ilw-back-to-top--focus-outline);
 }  
 button.top-of-page {
   transform: translateY(88px);
