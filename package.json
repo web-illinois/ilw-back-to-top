@@ -3,7 +3,7 @@
   "description": "Illinois Toolkit: The Illinois component back-to-top allows you to provide a simple way to skip either to the top of a page or to a designated point in the page (such as the page content area).",
   "private": false,
   "license": "MIT",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "files": [
     "src/**",
