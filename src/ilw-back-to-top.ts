@@ -101,6 +101,11 @@ export default class BackToTop extends LitElement {
     return window.scrollY || document.documentElement.scrollTop;
   }
 
+  private prefersReducedMotion(): boolean {
+    return typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   // Helper method to find the first focusable element on the page
   private getFirstFocusableElement(): Element | null {
     const focusableSelectors = [
@@ -149,7 +154,11 @@ export default class BackToTop extends LitElement {
     if (button) {
       button.blur();
     }
-    if (this.isBelowFold()) this.jumpToFold();
+
+    if (!this.prefersReducedMotion() && this.isBelowFold()) {
+      this.jumpToFold();
+    }
+
     this.startScrollToTop();
   }
 
@@ -177,7 +186,18 @@ export default class BackToTop extends LitElement {
     setTimeout(this.continueScroll, 10);
   }
 
+  private scrollToTopImmediately(): void {
+    this.expectedPositionAfterScroll = null;
+    window.scrollTo(0, this.topOfPage);
+    this.focusFirstElement();
+  }
+
   private startScrollToTop(): void {
+    if (this.prefersReducedMotion()) {
+      this.scrollToTopImmediately();
+      return;
+    }
+
     this.scrollToTop();
   }
 
