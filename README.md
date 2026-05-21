@@ -4,7 +4,7 @@ This component places a button in the bottom-right corner of the screen which ta
 
 ## Placement Guidance
 
-The preferred placement is as close as possible to the ending `</body>` tag, outside of any `<ilw-page>` element in use, so the button behaves like a page-level utility control. You can also place the component inside the `<footer>` tag.
+The preferred placement is as close as possible to the ending `</body>` tag, outside of any `<ilw-page>` element in use, so the button behaves like a page-level utility control. You can also place the component inside the `<ilw-footer>` tag.
 
 By default, this component will take the visitor to the top edge of the page. To change the location of the top of the page, use the `target` attribute.
 
