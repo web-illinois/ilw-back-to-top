@@ -101,8 +101,13 @@ export default class BackToTop extends LitElement {
     return window.scrollY || document.documentElement.scrollTop;
   }
 
-  // Helper method to find the first focusable element on the page
-  private getFirstFocusableElement(): Element | null {
+  private prefersReducedMotion(): boolean {
+    return typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  // Helper method to find the first focusable element within a given root element
+  private getFirstFocusableElement(root: Document | Element = document): Element | null {
     const focusableSelectors = [
       'a[href]',
       'button:not([disabled])',
@@ -116,7 +121,7 @@ export default class BackToTop extends LitElement {
       'details > summary'
     ];
 
-    const focusableElements = document.querySelectorAll(focusableSelectors.join(','));
+    const focusableElements = root.querySelectorAll(focusableSelectors.join(','));
 
     // Filter out elements that are not visible or have negative tabindex
     for (let element of focusableElements) {
@@ -134,9 +139,29 @@ export default class BackToTop extends LitElement {
     return null;
   }
 
-  // Method to focus the first focusable element
+  // Method to focus the first focusable element, scoped to the target element if set
   private focusFirstElement(): void {
-    const firstFocusable = this.getFirstFocusableElement() as HTMLElement | null;
+    let firstFocusable: HTMLElement | null = null;
+
+    if (this.target) {
+      const targetElement = document.getElementById(this.target);
+      if (targetElement) {
+        // Focus the target itself if focusable, otherwise its first focusable child
+        const isFocusable = targetElement.tabIndex >= 0 ||
+          targetElement.hasAttribute('href') ||
+          targetElement.hasAttribute('controls');
+        if (isFocusable) {
+          firstFocusable = targetElement;
+        } else {
+          firstFocusable = this.getFirstFocusableElement(targetElement) as HTMLElement | null;
+        }
+      }
+    }
+
+    if (!firstFocusable) {
+      firstFocusable = this.getFirstFocusableElement() as HTMLElement | null;
+    }
+
     if (firstFocusable) {
       firstFocusable.focus();
     }
@@ -149,7 +174,11 @@ export default class BackToTop extends LitElement {
     if (button) {
       button.blur();
     }
-    if (this.isBelowFold()) this.jumpToFold();
+
+    if (!this.prefersReducedMotion() && this.isBelowFold()) {
+      this.jumpToFold();
+    }
+
     this.startScrollToTop();
   }
 
@@ -163,8 +192,11 @@ export default class BackToTop extends LitElement {
   }
 
   private isInExpectedPosition(): boolean {
-    return this.expectedPositionAfterScroll !== null &&
-        this.getScrollPosition() === this.expectedPositionAfterScroll;
+    if (this.expectedPositionAfterScroll === null) return false;
+    // Use a 60px tolerance to account for mobile browsers shifting scrollY when the
+    // address bar shows/hides (~50px on iOS). We stop only if the user has scrolled
+    // clearly downward past the expected position.
+    return this.getScrollPosition() <= this.expectedPositionAfterScroll + 60;
   }
 
   private jumpToFold(): void {
@@ -174,10 +206,21 @@ export default class BackToTop extends LitElement {
   private scrollToTop(): void {
     this.expectedPositionAfterScroll = this.getNextScrollPosition();
     window.scrollTo(0, this.expectedPositionAfterScroll);
-    setTimeout(this.continueScroll, 10);
+    requestAnimationFrame(this.continueScroll);
+  }
+
+  private scrollToTopImmediately(): void {
+    this.expectedPositionAfterScroll = null;
+    window.scrollTo(0, this.topOfPage);
+    this.focusFirstElement();
   }
 
   private startScrollToTop(): void {
+    if (this.prefersReducedMotion()) {
+      this.scrollToTopImmediately();
+      return;
+    }
+
     this.scrollToTop();
   }
 

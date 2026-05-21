@@ -1,10 +1,16 @@
 # ilw-back-to-top
 ## Overview
-This component places a button in the bottom-right corner of the screen which takes visitors back to the top of the page. It uses animation that simulates vertical scrolling while not being overwhelming for motion-sensitive viewers.
+This component places a button in the bottom-right corner of the screen which takes visitors back to the top of the page.
 
-This component should be placed as close as possible to the ending `</body>` tag, outside of any `<ilw-page>` element in use.
+## Placement Guidance
+
+The preferred placement is as close as possible to the ending `</body>` tag, outside of any `<ilw-page>` element in use, so the button behaves like a page-level utility control. You can also place the component inside the `<footer>` tag.
 
 By default, this component will take the visitor to the top edge of the page. To change the location of the top of the page, use the `target` attribute.
+
+## Accessibility
+
+This component respects the user's reduced-motion preference. If the user has enabled Reduced Motion on their device, clicking the button scrolls directly to the top target instead of using the stepped scroll effect.
 
 ## Code Examples
 
