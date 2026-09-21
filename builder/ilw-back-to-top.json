@@ -5,22 +5,34 @@
   "repository-name": "ilw-back-to-top",
   "description": "Give visitors a convenient control for returning to the top of a page or another designated location, with configurable colors and arrow placement.",
   "purpose": "Provide a way to scroll back to the top of the page.",
-  "customtemplates": [],
+  "customtemplates": [
+    {
+      "name": "Development Only",
+      "path": "/component/ilw-back-to-top/custom-dev/index.html",
+      "notes": "Use the guided custom builder for this component."
+    },
+    {
+      "name": "Custom Template",
+      "path": "/component/ilw-back-to-top/custom/index.html",
+      "notes": "Use the guided custom builder for this component."
+    }
+
+  ],
   "versions": [
     {
       "name": "1.0",
       "notes": "",
-      "template": "1.0"
+      "template": "custom"
     },
     {
       "name": "1.1",
       "notes": "",
-      "template": "1.0"
+      "template": "custom"
     },
     {
       "name": "1.2",
       "notes": "",
-      "template": "1.0"
+      "template": "custom"
     }
   ]
 }
